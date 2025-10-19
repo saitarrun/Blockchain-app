@@ -4319,12 +4319,12 @@
         }
       },
       "links": {},
-      "address": "0x76D48Fc47C1Ce729Fb17a7fD619C2000D32e78F0",
-      "transactionHash": "0xe331b5c66c42396b17321fbe0375422def1d46647d463a5aedf68edfc6a33f1e"
+      "address": "0xc6A7dC48Cf15f05A3dcF3Cd0A54172cA69444878",
+      "transactionHash": "0x34809db2558dba308ba6d56ff6af6520d63cec1682f17cfdc739ab3bc7f29bff"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2025-10-19T10:10:39.851Z",
+  "updatedAt": "2025-10-19T10:19:56.738Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {

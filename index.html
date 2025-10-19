@@ -136,33 +136,35 @@
       <div id="zombieGrid" class="zgrid"></div>
     </section>
 
-    <aside class="panel" style="display:none;">
-      <h2>Battle Command</h2>
-      <div class="inputs">
-        <div class="field">
-          <label class="label">Attacker ID</label>
-          <input class="number" id="attacker" type="number" min="0" placeholder="e.g. 0"/>
+    <aside class="panel">
+      <div style="display:none;">
+        <h2>Battle Command</h2>
+        <div class="inputs">
+          <div class="field">
+            <label class="label">Attacker ID</label>
+            <input class="number" id="attacker" type="number" min="0" placeholder="e.g. 0"/>
+          </div>
+          <div class="field">
+            <label class="label">Defender ID</label>
+            <input class="number" id="defender" type="number" min="0" placeholder="e.g. 1"/>
+          </div>
         </div>
-        <div class="field">
-          <label class="label">Defender ID</label>
-          <input class="number" id="defender" type="number" min="0" placeholder="e.g. 1"/>
+        <div class="actions" style="margin-top:14px">
+          <button class="btn btn-warning" id="btnAttack">⚔️ Attack</button>
         </div>
-      </div>
-      <div class="actions" style="margin-top:14px">
-        <button class="btn btn-warning" id="btnAttack">⚔️ Attack</button>
-      </div>
 
-      <hr style="border-color:rgba(255,255,255,.12);margin:16px 0">
+        <hr style="border-color:rgba(255,255,255,.12);margin:16px 0">
 
-      <h2>Create Random</h2>
-      <div class="inputs">
-        <div class="field" style="grid-column:1/-1">
-          <label class="label">Name</label>
-          <input class="input" id="randName" type="text" placeholder="Random name or leave blank"/>
+        <h2>Create Random</h2>
+        <div class="inputs">
+          <div class="field" style="grid-column:1/-1">
+            <label class="label">Name</label>
+            <input class="input" id="randName" type="text" placeholder="Random name or leave blank"/>
+          </div>
         </div>
-      </div>
-      <div class="actions" style="margin-top:14px">
-        <button class="btn btn-accent" id="btnCreateNamed">🧟 Spawn</button>
+        <div class="actions" style="margin-top:14px">
+          <button class="btn btn-accent" id="btnCreateNamed">🧟 Spawn</button>
+        </div>
       </div>
 
       <hr style="border-color:rgba(255,255,255,.12);margin:16px 0">
@@ -263,6 +265,10 @@ async function init(){
     }
 
     cryptoZombies.events.Transfer({ filter: { _to: userAccount } })
+      .on("data", async ()=> { await refreshMyIds(); await renderZombies(MY_IDS); })
+      .on("error", console.error);
+
+    cryptoZombies.events.Transfer({ filter: { _from: userAccount } })
       .on("data", async ()=> { await refreshMyIds(); await renderZombies(MY_IDS); })
       .on("error", console.error);
 
