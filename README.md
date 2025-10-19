@@ -45,7 +45,6 @@ Built as part of the **CryptoZombies Demo Project**.
    ```bash
    truffle migrate --reset --network development
    truffle migrate --network development   # Local Ganache
-   truffle migrate --network sepolia       # Sepolia testnet
    ```
 
 5. **Check Deployed Contract Address**
