@@ -1,0 +1,458 @@
+<!-- BEGIN index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>CryptoZombies • Battle Arena</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.2.7-rc.0/web3.min.js"></script>
+<script src="cryptozombies_abi.js"></script>
+<script src="images/images.js"></script>
+<style>
+  :root{--bg:#0b0f17;--panel:#0f1624;--glass:rgba(255,255,255,.06);--text:#e5ecff;--muted:#98a3c7;--primary:#8a5cff;--accent:#00ffd1;--danger:#ff4d6d;--success:#59ffa3;--warning:#ffd166;--shadow:0 20px 40px rgba(0,0,0,.45);--radius:18px}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 800px at 80% -10%, #1c2541 0%, rgba(28,37,65,0) 60%),
+      radial-gradient(1000px 700px at -10% 110%, #2a2a72 0%, rgba(42,42,114,0) 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:28px 18px 80px}
+  .topbar{display:flex;align-items:center;gap:14px;justify-content:space-between;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.12);padding:14px 18px;border-radius:18px;box-shadow:var(--shadow);backdrop-filter: blur(8px)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--accent),#0ff0b3,#281b63);box-shadow:0 0 24px rgba(0,255,209,.4), inset 0 0 12px rgba(0,0,0,.4)}
+  h1{margin:0;font-family:Orbitron,Inter,sans-serif;letter-spacing:.04em;font-size:22px;text-transform:uppercase}
+  .wallet{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+  .chip{padding:6px 10px;border-radius:999px;background:var(--glass);border:1px solid rgba(255,255,255,.14);color:var(--text)}
+  .grid{margin-top:18px;display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+  @media (max-width:980px){.grid{grid-template-columns:1fr}}
+  .panel{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px;box-shadow:var(--shadow);backdrop-filter: blur(8px)}
+  .panel h2{margin:0 0 14px;font-family:Orbitron,Inter,sans-serif;text-transform:uppercase;letter-spacing:.06em;font-size:16px;color:#dfe6ff}
+  .actions{display:flex;flex-wrap:wrap;gap:10px}
+  .btn{border:none;outline:0;cursor:pointer;padding:10px 14px;border-radius:12px;font-weight:700;letter-spacing:.02em;color:#0a0d14;transition:transform .06s ease,filter .2s ease, box-shadow .2s ease}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:linear-gradient(135deg,var(--primary),#5b3df6);color:#fff;box-shadow:0 10px 24px rgba(138,92,255,.35)}
+  .btn-accent{background:linear-gradient(135deg,var(--accent),#00cdb0);color:#00261f;box-shadow:0 10px 24px rgba(0,255,209,.35)}
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,.18)}
+  .btn-danger{background:linear-gradient(135deg,#ff5b7e,var(--danger));color:#430010;box-shadow:0 10px 24px rgba(255,77,109,.35)}
+  .btn-warning{background:linear-gradient(135deg,var(--warning),#ffb703)}
+  .inputs{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  .input,.number{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.16);color:var(--text);padding:10px 12px;border-radius:12px;outline:0;font-size:14px}
+  .zgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:10px}
+  @media (max-width:1100px){.zgrid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:680px){.zgrid{grid-template-columns:1fr}}
+  .zcard{position:relative;overflow:hidden;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.12);box-shadow:var(--shadow)}
+  .zmedia{height:140px;background:#121a2b;display:flex;align-items:center;justify-content:center}
+  .zmedia img{width:120px;height:120px;border-radius:16px;object-fit:cover;box-shadow:0 0 0 4px rgba(255,255,255,.06)}
+  .zbody{padding:12px}
+  .ztitle{font-weight:700;display:flex;justify-content:space-between;align-items:center}
+  .zsub{color:var(--muted);font-size:12px}
+  .zstats{margin-top:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .stat{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:8px;text-align:center;font-size:12px;color:#dfe6ff}
+  .zactions{display:flex;gap:8px;margin-top:10px}
+  .btn-sm{padding:8px 10px;border-radius:10px;font-size:12px}
+  .pill{display:inline-block;padding:6px 8px;border-radius:999px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.12);font-size:12px;color:#cfe}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;min-width:260px;background:rgba(15,22,36,.92);color:#dfe6ff;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);display:none;z-index:50}
+  .toast.ok{border-color:rgba(0,255,209,.35)}
+  .toast.err{border-color:rgba(255,77,109,.35)}
+  .loader{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:60;backdrop-filter: blur(2px)}
+  .spinner{width:64px;height:64px;border-radius:50%;border:6px solid rgba(255,255,255,.12);border-top-color:var(--accent);animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .footer{margin-top:22px;text-align:center;color:var(--muted);font-size:12px}
+  .link{color:var(--accent);text-decoration:none;border-bottom:1px dashed rgba(0,255,209,.4)}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo"></div>
+      <h1>CryptoZombies • Battle Arena</h1>
+    </div>
+    <div class="wallet">
+      <span class="chip" id="netChip">Network: —</span>
+      <span class="chip" id="addrChip">Address: —</span>
+      <button class="btn btn-ghost" id="refreshBtn">⟳ Refresh</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <h2>Your Horde</h2>
+        <div class="actions">
+          <button class="btn btn-primary" id="btnShow">Show Zombies</button>
+          <button class="btn btn-accent" id="btnCreate">Create Zombie</button>
+          <button class="btn btn-danger" id="btnClear">Clear List</button>
+          <button class="btn btn-ghost" id="btnGallery" onclick="location.href='gallery.html'">Gallery</button>
+        </div>
+      </div>
+      <div style="margin-top:8px" id="myIdsPills"></div>
+      <div id="zombieGrid" class="zgrid"></div>
+    </section>
+
+    <aside class="panel">
+      <h2>Battle Command</h2>
+      <div class="inputs">
+        <div class="field">
+          <label class="label">Attacker ID</label>
+          <input class="number" id="attacker" type="number" min="0" placeholder="e.g. 0"/>
+        </div>
+        <div class="field">
+          <label class="label">Defender ID</label>
+          <input class="number" id="defender" type="number" min="0" placeholder="e.g. 1"/>
+        </div>
+      </div>
+      <div class="actions" style="margin-top:14px">
+        <button class="btn btn-warning" id="btnAttack">⚔️ Attack</button>
+      </div>
+
+      <hr style="border-color:rgba(255,255,255,.12);margin:16px 0">
+
+      <h2>Create Random</h2>
+      <div class="inputs">
+        <div class="field" style="grid-column:1/-1">
+          <label class="label">Name</label>
+          <input class="input" id="randName" type="text" placeholder="Random name or leave blank"/>
+        </div>
+      </div>
+      <div class="actions" style="margin-top:14px">
+        <button class="btn btn-accent" id="btnCreateNamed">🧟 Spawn</button>
+      </div>
+
+      <hr style="border-color:rgba(255,255,255,.12);margin:16px 0">
+
+      <h2>Transfer Zombie</h2>
+      <div class="inputs">
+        <div class="field">
+          <label class="label">Zombie ID</label>
+          <input class="number" id="transferZombieId" type="number" min="0" placeholder="e.g. 0"/>
+        </div>
+        <div class="field">
+          <label class="label">To Address</label>
+          <input class="input" id="transferToAddress" type="text" placeholder="e.g. 0x..."/>
+        </div>
+      </div>
+      <div class="actions" style="margin-top:14px">
+        <button class="btn btn-primary" id="btnTransfer">📬 Transfer</button>
+      </div>
+
+      <div id="txStatus" style="margin-top:16px;color:#a8c1ff"></div>
+    </aside>
+  </div>
+
+  <div class="footer">made with 💀 &nbsp;|&nbsp; <a class="link" href="#" onclick="location.reload()">reset</a></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="loader" id="loader"><div class="spinner"></div></div>
+
+<script>
+/*** Local zombie images ***/
+const ZOMBIE_IMAGES = [
+  "images/cartoon-blue-zombie-head-vector-26684274.avif",
+  "images/cartoon-zombie-graveyard-vector-790116.avif",
+  "images/cartoon-zombie-head-vector-21359926.avif",
+  "images/cartoon-zombie-head-vector-22609051.avif",
+  "images/cartoon-zombie-vector-2138255.avif",
+  "images/cartoon-zombie-vector-22441529.avif",
+  "images/cute-zombie-cartoon-vector-1693430.avif",
+  "images/green-goblin-monster-vector-134349.avif",
+  "images/melting-skull-smiley-horror-cartoon-vector-46480203.avif",
+  "images/scary-zombie-face-cartoon-vector-26805326.avif",
+  "images/spooky-halloween-zombie-cartoon-vector-1585348.avif",
+  "images/zombie-cartoon-set-halloween-theme-vector-6015006.avif",
+  "images/zombie-christmas-cartoon-vector-49483160.avif",
+  "images/zombie-dance-halloween-vector-27489333.avif",
+  "images/zombie-halloween-cartoon-vector-27138078.avif",
+  "images/zombie-mascot-logo-vector-26837403.avif",
+  "images/zombie-office-workers-cartoon-vector-27289340.avif"
+];
+const PLACEHOLDER_AVATAR =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><defs><radialGradient id="g" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#1e2a47"/><stop offset="100%" stop-color="#0d1423"/></radialGradient></defs><rect width="100%" height="100%" rx="16" ry="16" fill="url(#g)"/><circle cx="50" cy="60" r="16" fill="#293349"/><circle cx="80" cy="60" r="16" fill="#293349"/><circle cx="50" cy="60" r="10" fill="#ffc857"/><circle cx="80" cy="60" r="10" fill="#ffc857"/><circle cx="53" cy="60" r="3" fill="#222"/><circle cx="83" cy="60" r="3" fill="#222"/></svg>`);
+
+function animatedZombieUrl(id){ return ZOMBIE_IMAGES.length ? ZOMBIE_IMAGES[Number(id) % ZOMBIE_IMAGES.length] : PLACEHOLDER_AVATAR; }
+
+/*** UI helpers ***/
+const toast = (msg, kind="ok")=>{
+  const el = document.getElementById("toast");
+  el.className = "toast " + kind;
+  el.textContent = msg;
+  el.style.display = "block";
+  clearTimeout(window.__tt); window.__tt = setTimeout(()=> el.style.display="none", 2800);
+};
+const loading = (on)=> document.getElementById("loader").style.display = on ? "flex" : "none";
+const short = a => a ? a.slice(0,6)+"…"+a.slice(-4) : "—";
+const escapeHtml = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const parseErr = (e)=> e?.message ? e.message.replace("Internal JSON-RPC error.", "").trim() : String(e||"Unknown error");
+
+/*** Web3 / contract ***/
+let web3, cryptoZombies, userAccount, HAS_LEVEL_DOWN = false;
+let MY_IDS = [];
+
+async function init(){
+  if (!window.ethereum){ toast("Install MetaMask", "err"); return; }
+  web3 = new Web3(window.ethereum);
+  await window.ethereum.request({ method: "eth_requestAccounts" });
+  const [account] = await web3.eth.getAccounts();
+  userAccount = account;
+
+  const netId = await web3.eth.net.getId();
+  $("#netChip").text(`Network: ${netId}`);
+  $("#addrChip").text(`Address: ${short(userAccount)}`);
+
+  const artifact = await fetch("build/contracts/ZombieOwnership.json").then(r=>r.json());
+  const netEntry = artifact.networks?.[netId];
+  if(!netEntry){ toast(`Contract not deployed on network ${netId}`, "err"); throw new Error("No deployment for this network"); }
+  cryptoZombies = new web3.eth.Contract(cryptoZombiesABI, netEntry.address);
+
+  HAS_LEVEL_DOWN = Boolean(cryptoZombies.methods.levelDown);
+
+  cryptoZombies.events.Transfer({ filter: { _to: userAccount } })
+    .on("data", async ()=> { await refreshMyIds(); await renderZombies(MY_IDS); })
+    .on("error", console.error);
+
+  bindUI();
+  await refreshMyIds();
+  await renderZombies(MY_IDS);
+}
+
+function bindUI(){
+  $("#refreshBtn").on("click", async ()=> { await refreshMyIds(); await renderZombies(MY_IDS); });
+  $("#btnShow").on("click", async ()=> { await refreshMyIds(); await renderZombies(MY_IDS); });
+  $("#btnClear").on("click", ()=> { $("#zombieGrid").empty(); $("#txStatus").text("Zombie list cleared!"); });
+  $("#btnCreate").on("click", ()=> createRandomZombie(randomName()));
+  $("#btnCreateNamed").on("click", ()=> { const name = ($("#randName").val() || randomName()).trim(); createRandomZombie(name); });
+  $("#btnAttack").on("click", attackFlow);
+  $("#btnTransfer").on("click", transferZombie);
+  ethereum.on("accountsChanged", ()=> location.reload());
+  ethereum.on("chainChanged", ()=> location.reload());
+}
+
+/*** Reads ***/
+const getZombiesByOwner = (owner) => cryptoZombies.methods.getZombiesByOwner(owner).call();
+const getZombie         = (id)    => cryptoZombies.methods.zombies(id).call();
+const ownerOf           = (id)    => cryptoZombies.methods.ownerOf(id).call();
+
+/*** Helpers ***/
+async function zombieExists(id){
+  try{
+    const who = await ownerOf(id);
+    return !!who && who !== '0x0000000000000000000000000000000000000000';
+  }catch{ return false; }
+}
+
+async function simulate(method, from, value){
+  try{ await method.call({ from, value }); return null; }
+  catch(e){ return parseErr(e); }
+}
+
+/*** Writes ***/
+async function createRandomZombie(name){
+  $("#txStatus").text("Spawning zombie on-chain...");
+  loading(true);
+  try{
+    // helpful guard if someone still has the one-per-owner rule in a stale build
+    const mine = await getZombiesByOwner(userAccount);
+    if (mine && mine.length > 0) {
+      const dry = cryptoZombies.methods.createRandomZombie(name);
+      const err = await simulate(dry, userAccount, 0);
+      if (err) throw new Error("This deployed contract enforces ONE zombie per address. Remove the require in zombiefactory.sol and redeploy.");
+    }
+    await cryptoZombies.methods.createRandomZombie(name).send({ from: userAccount });
+    toast("Spawn complete!");
+    $("#txStatus").text("Zombie created successfully!");
+    await refreshMyIds();
+    await renderZombies(MY_IDS);
+  }catch(e){
+    const msg = parseErr(e);
+    $("#txStatus").text(msg);
+    toast(msg, "err");
+  }finally{
+    loading(false);
+  }
+}
+
+async function levelUp(id){
+  try{
+    if (!(await zombieExists(id))) return toast("Zombie ID does not exist.", "err");
+    const who = await ownerOf(id);
+    if (who.toLowerCase() !== userAccount.toLowerCase()) return toast("You must own this zombie to level up.", "err");
+
+    const value = web3.utils.toWei("0.001","ether");
+    const m = cryptoZombies.methods.levelUp(id);
+    const err = await simulate(m, userAccount, value);
+    if (err) throw new Error(err);
+
+    loading(true);
+    await m.send({ from: userAccount, value });
+    toast("Level up!");
+    await refreshMyIds();
+    await renderZombies(MY_IDS);
+  }catch(e){ toast(parseErr(e), "err"); }
+  finally{ loading(false); }
+}
+
+async function levelDown(id){
+  if (!HAS_LEVEL_DOWN) return toast("LevelDown not available in this contract.", "err");
+  try{
+    if (!(await zombieExists(id))) return toast("Zombie ID does not exist.", "err");
+    const who = await ownerOf(id);
+    if (who.toLowerCase() !== userAccount.toLowerCase()) return toast("You must own this zombie to level down.", "err");
+
+    const value = web3.utils.toWei("0.0001","ether");
+    const m = cryptoZombies.methods.levelDown(id);
+    const err = await simulate(m, userAccount, value);
+    if (err) throw new Error(err);
+
+    loading(true);
+    await m.send({ from: userAccount, value });
+    toast("Level down!");
+    await refreshMyIds();
+    await renderZombies(MY_IDS);
+  }catch(e){ toast(parseErr(e), "err"); }
+  finally{ loading(false); }
+}
+
+async function attackFlow(){
+  const a = $("#attacker").val(), d = $("#defender").val();
+  if (a === "" || d === "") return toast("Enter attacker & defender IDs.", "err");
+  if (a === d) return toast("Attacker and defender must be different.", "err");
+  if (!(await zombieExists(a)) || !(await zombieExists(d))) return toast("Attacker or defender does not exist.", "err");
+
+  try{
+    const who = await ownerOf(a);
+    if (who.toLowerCase() !== userAccount.toLowerCase()) return toast("You must own the attacker zombie.", "err");
+
+    const m = cryptoZombies.methods.attack(a, d);
+    const err = await simulate(m, userAccount, 0);
+    if (err) throw new Error(err);
+
+    $("#txStatus").text("Battle in progress...");
+    loading(true);
+    await m.send({ from: userAccount });
+    toast("Battle finished!");
+    $("#txStatus").text("Battle finished!");
+    await refreshMyIds();
+    await renderZombies(MY_IDS);
+  }catch(e){
+    const msg = parseErr(e); toast(msg, "err"); $("#txStatus").text(msg);
+  }finally{
+    loading(false);
+  }
+}
+
+async function transferZombie() {
+  const zombieId = $("#transferZombieId").val();
+  const toAddress = $("#transferToAddress").val();
+
+  if (zombieId === "" || toAddress === "") {
+    return toast("Please enter a Zombie ID and a recipient address.", "err");
+  }
+
+  if (!web3.utils.isAddress(toAddress)) {
+    return toast("Invalid recipient address.", "err");
+  }
+
+  loading(true);
+  $("#txStatus").text(`Transferring Zombie #${zombieId} to ${short(toAddress)}...`);
+
+  try {
+    const who = await ownerOf(zombieId);
+    if (who.toLowerCase() !== userAccount.toLowerCase()) {
+      loading(false);
+      return toast("You can only transfer zombies you own.", "err");
+    }
+
+    await cryptoZombies.methods.transferFrom(userAccount, toAddress, zombieId).send({ from: userAccount });
+    toast("Transfer successful!");
+    $("#txStatus").text(`Zombie #${zombieId} transferred to ${short(toAddress)}.`);
+    await refreshMyIds();
+    await renderZombies(MY_IDS);
+  } catch (e) {
+    const msg = parseErr(e);
+    toast(msg, "err");
+    $("#txStatus").text(msg);
+  } finally {
+    loading(false);
+  }
+}
+
+/*** Render ***/
+async function refreshMyIds(){ MY_IDS = await getZombiesByOwner(userAccount); renderMyIdPills(); }
+
+function renderMyIdPills(){
+  const box = $("#myIdsPills").empty();
+  if (!MY_IDS.length){ box.append(`<span class="pill">No zombies yet</span>`); return; }
+  box.append(`<span class="pill">Your IDs:</span>`);
+  MY_IDS.forEach(id=>{
+    const pill = $(`<button class="pill" style="margin-left:6px;cursor:pointer">${id}</button>`);
+    pill.on('click', ()=>{
+      const atk = $("#attacker").val();
+      if (atk === "") $("#attacker").val(id);
+      else $("#defender").val(id);
+    });
+    box.append(pill);
+  });
+}
+
+async function renderZombies(ids){
+  const grid = $("#zombieGrid").empty();
+  if (!ids || !ids.length){
+    grid.append(`<div class="zcard" style="grid-column:1/-1;padding:16px;text-align:center">No zombies yet. Click <b>Create Zombie</b> to spawn one.</div>`);
+    return;
+  }
+  for (const id of ids){
+    const z = await getZombie(id);
+    const imgUrl = animatedZombieUrl(id);
+    const card = $(`
+      <div class="zcard">
+        <div class="zmedia">
+          <img src="${imgUrl}" alt="Zombie ${id}">
+        </div>
+        <div class="zbody">
+          <div class="ztitle">
+            <div>#${id} · ${escapeHtml(z.name)}</div>
+            <span class="zsub">DNA ${z.dna}</span>
+          </div>
+          <div class="zstats">
+            <div class="stat">Lvl<br><b>${z.level}</b></div>
+            <div class="stat">Wins<br><b>${z.winCount}</b></div>
+            <div class="stat">Losses<br><b>${z.lossCount}</b></div>
+          </div>
+          <div class="zactions">
+            <button class="btn btn-sm btn-accent" onclick="levelUp(${id})">Level Up</button>
+            ${HAS_LEVEL_DOWN ? `<button class="btn btn-sm btn-ghost" onclick="levelDown(${id})">Level Down</button>` : ``}
+          </div>
+        </div>
+      </div>
+    `);
+    card.find("img").on("error", function(){ this.src = PLACEHOLDER_AVATAR; });
+    grid.append(card);
+  }
+}
+
+/*** misc ***/
+const randomName = () => {
+  const s = ["zor","gar","muk","rax","zul","grim","gore","vex","brax","skul","morg","zog","kran","narg","ul"];
+  let n = Array.from({length:3}, ()=> s[Math.floor(Math.random()*s.length)]).join('');
+  return n.charAt(0).toUpperCase() + n.slice(1);
+};
+
+/*** boot ***/
+window.addEventListener("load", init);
+window.levelUp = levelUp; window.levelDown = levelDown;
+</script>
+</body>
+</html>
+<!-- END index.html -->

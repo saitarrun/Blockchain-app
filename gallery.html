@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Zombie Gallery 🧟</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0b0f17; --panel:#0f1624; --text:#e5ecff; --muted:#98a3c7; --accent:#00ffd1; --shadow:0 10px 30px rgba(0,0,0,.45); --radius:18px }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:radial-gradient(1200px 800px at 80% -10%,#1c2541 0%,rgba(28,37,65,0) 60%),radial-gradient(1000px 700px at -10% 110%,#2a2a72 0%,rgba(42,42,114,0) 60%),var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh}
+    header{display:flex;align-items:center;justify-content:space-between;padding:20px 40px;background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px)}
+    h1{font-family:Orbitron,Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;font-size:24px}
+    a{color:var(--accent);text-decoration:none;font-weight:700;font-size:14px}
+    main{padding:40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px}
+    .card{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;transition:transform .2s,box-shadow .3s;cursor:pointer}
+    .card:hover{transform:translateY(-6px);box-shadow:0 10px 40px rgba(0,255,209,.25)}
+    img{width:100%;height:200px;object-fit:cover;border-bottom:1px solid rgba(255,255,255,.1)}
+    .card h3{text-align:center;font-family:Orbitron,Inter,sans-serif;padding:10px 8px;font-size:13px;color:var(--muted)}
+    footer{text-align:center;padding:30px 0;font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Zombie Gallery 🧟</h1>
+    <a href="index.html">← Back to Arena</a>
+  </header>
+
+  <!-- shared image list -->
+  <script src="images/images.js"></script>
+
+  <main id="gallery"></main>
+  <footer>made with 💀 | CryptoZombies Demo</footer>
+
+  <script>
+    const gallery = document.getElementById("gallery");
+    const files = (window.ZOMBIE_IMAGES || []).slice();
+
+    if (!files.length) {
+      gallery.innerHTML = `<div style="opacity:.8">No images listed in <code>images/images.js</code>.</div>`;
+    } else {
+      files.forEach((file, i) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        const img = document.createElement("img");
+        img.src = `images/${file}`;
+        img.alt = file;
+        img.onerror = () => img.src = "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='200'><rect width='100%' height='100%' fill='#0f1624'/><text x='50%' y='50%' fill='#98a3c7' font-family='Arial' font-size='14' text-anchor='middle' dominant-baseline='middle'>Image not found</text></svg>`);
+        const caption = document.createElement("h3");
+        caption.textContent = file.replace(/\.[^.]+$/, '').replace(/[-_]/g,' ');
+        card.append(img, caption);
+        gallery.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>
