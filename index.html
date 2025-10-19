@@ -250,7 +250,7 @@ async function init(){
     $("#netChip").text(`Network: ${netId}`);
     $("#addrChip").text(`Address: ${short(userAccount)}`);
 
-    const artifact = await fetch("build/contracts/ZombieOwnership.json").then(r=>r.json());
+    const artifact = await fetch("build/contracts/CryptoZombies.json").then(r=>r.json());
     const netEntry = artifact.networks?.[netId];
     if(!netEntry){ toast(`Contract not deployed on network ${netId}`, "err"); throw new Error("No deployment for this network"); }
     cryptoZombies = new web3.eth.Contract(cryptoZombiesABI, netEntry.address);

@@ -1,13 +1,9 @@
 pragma solidity ^0.4.25;
 
-import "./zombiefactory.sol";
+import "./zombieownership.sol";
 
-contract ZombieFeeding is ZombieFactory {
+contract ZombieFeeding is ZombieOwnership {
 
-  modifier onlyOwnerOf(uint _zombieId) {
-    require(msg.sender == zombieToOwner[_zombieId]);
-    _;
-  }
 
   function _triggerCooldown(Zombie storage _zombie) internal {
     _zombie.readyTime = uint32(now + cooldownTime);
@@ -20,9 +16,9 @@ contract ZombieFeeding is ZombieFactory {
   function feedAndMultiply(uint _zombieId, uint _targetDna) internal onlyOwnerOf(_zombieId) {
     Zombie storage myZombie = zombies[_zombieId];
     require(_isReady(myZombie));
-    _targetDna = _targetDna % dnaModulus;
-    uint newDna = (myZombie.dna + _targetDna) / 2;
-    _createZombie("NoName", newDna);
+    // _targetDna = _targetDna % dnaModulus;
+    // uint newDna = (myZombie.dna + _targetDna) / 2;
+    // _createZombie("NoName", newDna);
     _triggerCooldown(myZombie);
   }
 }

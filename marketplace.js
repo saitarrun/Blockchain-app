@@ -12,7 +12,7 @@ async function init() {
 
   const netId = await web3.eth.net.getId();
 
-  const cryptoZombiesArtifact = await fetch("build/contracts/ZombieOwnership.json").then((r) => r.json());
+  const cryptoZombiesArtifact = await fetch("build/contracts/CryptoZombies.json").then((r) => r.json());
   const cryptoZombiesAddress = cryptoZombiesArtifact.networks[netId].address;
   cryptoZombies = new web3.eth.Contract(cryptoZombiesABI, cryptoZombiesAddress);
 

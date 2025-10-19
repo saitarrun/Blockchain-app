@@ -7,6 +7,7 @@ contract ZombieAttack is ZombieHelper {
   function attack(uint _zombieId, uint _targetId) external onlyOwnerOf(_zombieId) {
     Zombie storage myZombie = zombies[_zombieId];
     Zombie storage enemyZombie = zombies[_targetId];
+    require(_isReady(myZombie));
     if (myZombie.level >= enemyZombie.level) {
       myZombie.winCount = myZombie.winCount.add(1);
       myZombie.level = myZombie.level.add(1);
