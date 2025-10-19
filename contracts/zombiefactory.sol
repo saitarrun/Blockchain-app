@@ -1,13 +1,11 @@
 pragma solidity ^0.4.25;
 
-import "./ownable.sol";
-import "./safemath.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 contract ZombieFactory is Ownable {
 
   using SafeMath for uint256;
-  using SafeMath32 for uint32;
-  using SafeMath16 for uint16;
 
   modifier onlyOwnerOf(uint _zombieId) {
     require(msg.sender == zombieToOwner[_zombieId]);
@@ -20,13 +18,17 @@ contract ZombieFactory is Ownable {
   uint dnaModulus = 10 ** dnaDigits;
   uint cooldownTime = 1 seconds;
 
+  enum Ability { None, FireBreath, ToxicBite, Regenerate }
+
   struct Zombie {
     string name;
     uint dna;
-    uint32 level;
+    uint level;
+    uint experience;
+    uint winCount;
+    uint lossCount;
     uint32 readyTime;
-    uint16 winCount;
-    uint16 lossCount;
+    Ability ability;
   }
 
   Zombie[] public zombies;
@@ -35,7 +37,8 @@ contract ZombieFactory is Ownable {
   mapping (address => uint) ownerZombieCount;
 
   function _createZombie(string _name, uint _dna) internal {
-    uint id = zombies.push(Zombie(_name, _dna, 1, uint32(now + cooldownTime), 0, 0)) - 1;
+    Ability _ability = Ability(uint(_dna) % 4);
+    uint id = zombies.push(Zombie(_name, _dna, 1, 0, 0, 0, uint32(now + cooldownTime), _ability)) - 1;
     zombieToOwner[id] = msg.sender;
     ownerZombieCount[msg.sender] = ownerZombieCount[msg.sender].add(1);
     emit NewZombie(id, _name, _dna);

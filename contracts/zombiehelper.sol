@@ -13,12 +13,21 @@ contract ZombieHelper is ZombieFeeding {
   }
 
   function withdraw() external onlyOwner {
-    address _owner = owner();
+    address _owner = owner;
     _owner.transfer(address(this).balance);
   }
 
   function setLevelUpFee(uint _fee) external onlyOwner {
     levelUpFee = _fee;
+  }
+
+  function _levelUp(uint _zombieId) internal {
+    Zombie storage zombie = zombies[_zombieId];
+    uint experienceNeeded = 15 + zombie.level * zombie.level;
+    if (zombie.experience >= experienceNeeded) {
+      zombie.level = zombie.level.add(1);
+      zombie.experience = zombie.experience.sub(experienceNeeded);
+    }
   }
 
   function levelUp(uint _zombieId) external payable {

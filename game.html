@@ -1,0 +1,320 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CryptoZombies - The Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.2.7-rc.0/web3.min.js"></script>
+    <script src="cryptozombies_abi.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0d0c1d;
+            --primary-color: #ff0055;
+            --secondary-color: #00ff9b;
+            --text-color: #f0f0f0;
+            --panel-bg: rgba(20, 20, 40, 0.8);
+            --border-color: rgba(0, 255, 155, 0.3);
+            --shadow-color: rgba(255, 0, 85, 0.4);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 20px 20px;
+        }
+
+        h1, h2 {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--secondary-color);
+            text-shadow: 0 0 10px var(--secondary-color);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #wallet-info span {
+            margin-left: 15px;
+            background: var(--panel-bg);
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        #zombie-horde, #main-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        #zombie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .zombie-card {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .zombie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 15px var(--shadow-color);
+            border-color: var(--primary-color);
+        }
+
+        .zombie-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--secondary-color);
+        }
+
+        .zombie-card h3 {
+            margin: 10px 0 5px;
+            color: var(--secondary-color);
+        }
+
+        .zombie-stats {
+            display: flex;
+            justify-content: space-around;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        #battle-arena, #actions-panel {
+            margin-bottom: 20px;
+        }
+
+        #battle-slots {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .battle-slot {
+            width: 200px;
+            height: 250px;
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        #vs-separator {
+            font-size: 2em;
+            color: var(--primary-color);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 10px 15px;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            box-shadow: 0 0 15px var(--shadow-color);
+        }
+
+        #battle-log {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            min-height: 100px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CryptoZombies</h1>
+            <div id="wallet-info">
+                <span id="netChip">Network: —</span>
+                <span id="addrChip">Address: —</span>
+            </div>
+        </header>
+
+        <main>
+            <section id="zombie-horde">
+                <h2>Your Horde</h2>
+                <div id="zombie-grid">
+                    <!-- Zombie cards will be rendered here by JavaScript -->
+                </div>
+            </section>
+
+            <section id="main-panel">
+                <div id="battle-arena">
+                    <h2>Battle Arena</h2>
+                    <div id="battle-slots">
+                        <div id="attacker-slot" class="battle-slot">Attacker</div>
+                        <div id="vs-separator">VS</div>
+                        <div id="defender-slot" class="battle-slot">Defender</div>
+                    </div>
+                    <button id="start-battle-btn" style="display: none;">Start Battle</button>
+                    <div id="battle-log"></div>
+                </div>
+
+                <div id="actions-panel">
+                    <h2>Actions</h2>
+                    <button id="create-zombie-btn">Create Random Zombie</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        let web3, cryptoZombies, userAccount;
+        const ABILITY_MAP = ["None", "Fire Breath", "Toxic Bite", "Regenerate"];
+        let selectedAttackerId = null;
+        let selectedDefenderId = null;
+
+        async function init() {
+            if (!window.ethereum) return alert("Please install MetaMask.");
+            web3 = new Web3(window.ethereum);
+            await window.ethereum.request({ method: "eth_requestAccounts" });
+            const accounts = await web3.eth.getAccounts();
+            userAccount = accounts[0];
+
+            const netId = await web3.eth.net.getId();
+            $('#netChip').text(`Network: ${netId}`);
+            $('#addrChip').text(`Address: ${userAccount.slice(0, 6)}...${userAccount.slice(-4)}`);
+
+            const artifact = await fetch("build/contracts/CryptoZombies.json").then(r => r.json());
+            const contractAddress = artifact.networks[netId].address;
+            cryptoZombies = new web3.eth.Contract(cryptoZombiesABI, contractAddress);
+
+            loadUserZombies();
+            bindUI();
+        }
+
+        function bindUI() {
+            $('#create-zombie-btn').on('click', createRandomZombie);
+            $('#start-battle-btn').on('click', startBattle);
+        }
+
+        async function loadUserZombies() {
+            const ids = await cryptoZombies.methods.getZombiesByOwner(userAccount).call();
+            $('#zombie-grid').empty();
+            for (const id of ids) {
+                const z = await cryptoZombies.methods.zombies(id).call();
+                renderZombie(z, id);
+            }
+        }
+
+        function renderZombie(z, id) {
+            const abilityName = ABILITY_MAP[z.ability] || "None";
+            const card = $(`
+                <div class="zombie-card" data-id="${id}">
+                    <img src="https://via.placeholder.com/100" alt="Zombie">
+                    <h3>${z.name}</h3>
+                    <div class="zombie-stats">
+                        <span>Lvl: ${z.level}</span>
+                        <span>Wins: ${z.winCount}</span>
+                        <span>Losses: ${z.lossCount}</span>
+                    </div>
+                    <div>Ability: <strong>${abilityName}</strong></div>
+                </div>
+            `);
+            card.on('click', () => selectZombieForBattle(id, card.html()));
+            $('#zombie-grid').append(card);
+        }
+
+        function selectZombieForBattle(id, cardHtml) {
+            if (!selectedAttackerId) {
+                selectedAttackerId = id;
+                $('#attacker-slot').html(cardHtml);
+            } else if (!selectedDefenderId) {
+                selectedDefenderId = id;
+                $('#defender-slot').html(cardHtml);
+            }
+
+            if (selectedAttackerId && selectedDefenderId) {
+                $('#start-battle-btn').show();
+            }
+        }
+
+        async function createRandomZombie() {
+            const name = `Zombie${Math.floor(Math.random() * 1000)}`;
+            logToBattleLog(`Creating ${name}...`);
+            await cryptoZombies.methods.createRandomZombie(name).send({ from: userAccount });
+            logToBattleLog(`${name} created!`);
+            loadUserZombies();
+        }
+
+        async function startBattle() {
+            logToBattleLog(`Battle started between Zombie #${selectedAttackerId} and #${selectedDefenderId}`);
+            try {
+                const result = await cryptoZombies.methods.attack(selectedAttackerId, selectedDefenderId).send({ from: userAccount });
+                logToBattleLog("Battle finished!");
+                // Simplified outcome check
+                const attacker = await cryptoZombies.methods.zombies(selectedAttackerId).call();
+                // You can add more detailed logic here to check who won
+                logToBattleLog(`Attacker Wins: ${attacker.winCount}`);
+                
+                // Reset selection
+                selectedAttackerId = null;
+                selectedDefenderId = null;
+                $('#attacker-slot').text('Attacker');
+                $('#defender-slot').text('Defender');
+                $('#start-battle-btn').hide();
+                loadUserZombies();
+
+            } catch (err) {
+                logToBattleLog(`Battle failed: ${err.message}`);
+            }
+        }
+
+        function logToBattleLog(message) {
+            $('#battle-log').append(`<div>${new Date().toLocaleTimeString()}: ${message}</div>`);
+        }
+
+        $(document).ready(init);
+    </script>
+</body>
+</html>

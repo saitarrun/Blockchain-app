@@ -1,6 +1,6 @@
 pragma solidity ^0.4.25;
 
-import "./ownable.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./zombieownership.sol";
 
 contract Marketplace is Ownable {
@@ -14,7 +14,7 @@ contract Marketplace is Ownable {
 
     ZombieOwnership public zombieContract;
 
-    constructor(address _zombieContractAddress) public {
+    function Marketplace(address _zombieContractAddress) public {
         zombieContract = ZombieOwnership(_zombieContractAddress);
     }
 

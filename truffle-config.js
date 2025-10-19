@@ -58,11 +58,19 @@ module.exports = {
     // Useful for deploying to a public network.
     // NB: It's important to wrap the provider as a function.
     sepolia: {
-      provider: () => new HDWalletProvider(mnemonic, `https://eth-sepolia.g.alchemy.com/v2/4oGYLOIaXppO0VvfZ-CQN`),
-      network_id: 11155111,       // Sepolia's id
-      gas: 5500000,        // Sepolia has a lower block limit than mainnet
-      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+      provider: () =>
+        new HDWalletProvider(
+          mnemonic,
+          `https://eth-sepolia.g.alchemy.com/v2/4oGYLOIaXppO0VvfZ-CQN` // Replace with your key
+        ),
+      network_id: 11155111,       // Sepolia's chain ID
+      gas: 5500000,               // Gas limit
+      confirmations: 2,           // Wait for 2 block confirmations
+      timeoutBlocks: 200,         // Timeout before deployment stops
+      skipDryRun: true            // Skip test dry run before migrations
     },
+
+    // You can add more networks below (like Goerli or Mainnet) if needed
     // Useful for private networks
     // private: {
     // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
