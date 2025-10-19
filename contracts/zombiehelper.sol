@@ -26,10 +26,7 @@ contract ZombieHelper is ZombieFeeding {
     zombies[_zombieId].level = zombies[_zombieId].level.add(1);
   }
 
-  function levelDown(uint _zombieId) external payable {
-    require(msg.value == levelDownFee);
-    zombies[_zombieId].level = zombies[_zombieId].level.sub(1);
-  }
+
 
   function changeName(uint _zombieId, string _newName) external aboveLevel(2, _zombieId) onlyOwnerOf(_zombieId) {
     zombies[_zombieId].name = _newName;
@@ -50,5 +47,14 @@ contract ZombieHelper is ZombieFeeding {
     }
     return result;
   }
+
+  function getAllZombies() external view returns(uint[]) {
+    uint[] memory result = new uint[](zombies.length);
+    for (uint i = 0; i < zombies.length; i++) {
+      result[i] = i;
+    }
+    return result;
+  }
+
 
 }

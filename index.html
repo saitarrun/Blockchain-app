@@ -94,6 +94,7 @@
           <button class="btn btn-accent" id="btnCreate">Create Zombie</button>
           <button class="btn btn-danger" id="btnClear">Clear List</button>
           <button class="btn btn-ghost" id="btnGallery" onclick="location.href='gallery.html'">Gallery</button>
+          <button class="btn btn-ghost" id="btnMarketplace" onclick="location.href='marketplace.html'">Marketplace</button>
         </div>
       </div>
       <div style="margin-top:8px" id="myIdsPills"></div>
@@ -150,7 +151,7 @@
     </aside>
   </div>
 
-  <div class="footer">made with 💀 &nbsp;|&nbsp; <a class="link" href="#" onclick="location.reload()">reset</a></div>
+  <div class="footer">  <a class="link" href="#" onclick="location.reload()">reset</a></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -179,7 +180,7 @@ const ZOMBIE_IMAGES = [
 ];
 const PLACEHOLDER_AVATAR =
   'data:image/svg+xml;utf8,' +
-  encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><defs><radialGradient id="g" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#1e2a47"/><stop offset="100%" stop-color="#0d1423"/></radialGradient></defs><rect width="100%" height="100%" rx="16" ry="16" fill="url(#g)"/><circle cx="50" cy="60" r="16" fill="#293349"/><circle cx="80" cy="60" r="16" fill="#293349"/><circle cx="50" cy="60" r="10" fill="#ffc857"/><circle cx="80" cy="60" r="10" fill="#ffc857"/><circle cx="53" cy="60" r="3" fill="#222"/><circle cx="83" cy="60" r="3" fill="#222"/></svg>`);
+  encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><defs><radialGradient id='g' cx='50%' cy='50%' r='60%'><stop offset='0%' stop-color='#1e2a47'/><stop offset='100%' stop-color='#0d1423'/></radialGradient></defs><rect width='100%' height='100%' rx='16' ry='16' fill='url(#g)'/><circle cx='50' cy='60' r='16' fill='#293349'/><circle cx='80' cy='60' r='16' fill='#293349'/><circle cx='50' cy='60' r='10' fill='#ffc857'/><circle cx='80' cy='60' r='10' fill='#ffc857'/><circle cx='53' cy='60' r='3' fill='#222'/><circle cx='83' cy='60' r='3' fill='#222'/></svg>`);
 
 function animatedZombieUrl(id){ return ZOMBIE_IMAGES.length ? ZOMBIE_IMAGES[Number(id) % ZOMBIE_IMAGES.length] : PLACEHOLDER_AVATAR; }
 
@@ -201,30 +202,47 @@ let web3, cryptoZombies, userAccount, HAS_LEVEL_DOWN = false;
 let MY_IDS = [];
 
 async function init(){
-  if (!window.ethereum){ toast("Install MetaMask", "err"); return; }
-  web3 = new Web3(window.ethereum);
-  await window.ethereum.request({ method: "eth_requestAccounts" });
-  const [account] = await web3.eth.getAccounts();
-  userAccount = account;
+  try {
+    if (!window.ethereum){ toast("Install MetaMask", "err"); return; }
+    web3 = new Web3(window.ethereum);
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+    const [account] = await web3.eth.getAccounts();
+    userAccount = account;
 
-  const netId = await web3.eth.net.getId();
-  $("#netChip").text(`Network: ${netId}`);
-  $("#addrChip").text(`Address: ${short(userAccount)}`);
+    const netId = await web3.eth.net.getId();
+    $("#netChip").text(`Network: ${netId}`);
+    $("#addrChip").text(`Address: ${short(userAccount)}`);
 
-  const artifact = await fetch("build/contracts/ZombieOwnership.json").then(r=>r.json());
-  const netEntry = artifact.networks?.[netId];
-  if(!netEntry){ toast(`Contract not deployed on network ${netId}`, "err"); throw new Error("No deployment for this network"); }
-  cryptoZombies = new web3.eth.Contract(cryptoZombiesABI, netEntry.address);
+    const artifact = await fetch("build/contracts/ZombieOwnership.json").then(r=>r.json());
+    const netEntry = artifact.networks?.[netId];
+    if(!netEntry){ toast(`Contract not deployed on network ${netId}`, "err"); throw new Error("No deployment for this network"); }
+    cryptoZombies = new web3.eth.Contract(cryptoZombiesABI, netEntry.address);
 
-  HAS_LEVEL_DOWN = Boolean(cryptoZombies.methods.levelDown);
+    HAS_LEVEL_DOWN = Boolean(cryptoZombies.methods.levelDown);
 
-  cryptoZombies.events.Transfer({ filter: { _to: userAccount } })
-    .on("data", async ()=> { await refreshMyIds(); await renderZombies(MY_IDS); })
-    .on("error", console.error);
+    const contractOwner = await cryptoZombies.methods.owner().call();
+    if (userAccount.toLowerCase() === contractOwner.toLowerCase()) {
+      $("#adminPanel").show();
+    }
 
-  bindUI();
-  await refreshMyIds();
-  await renderZombies(MY_IDS);
+    cryptoZombies.events.Transfer({ filter: { _to: userAccount } })
+      .on("data", async ()=> { await refreshMyIds(); await renderZombies(MY_IDS); })
+      .on("error", console.error);
+
+    cryptoZombies.events.NewZombie({ from: userAccount })
+      .on("data", function(event){
+          console.log("New Zombie Created! ID: " + event.returnValues.zombieId);
+          $("#txStatus").text(`New Zombie Created! ID: ${event.returnValues.zombieId}`);
+      })
+      .on("error", console.error);
+
+    bindUI();
+    await refreshMyIds();
+    await renderZombies(MY_IDS);
+  } catch (e) {
+    console.error(e);
+    toast(parseErr(e), "err");
+  }
 }
 
 function bindUI(){
@@ -262,13 +280,6 @@ async function createRandomZombie(name){
   $("#txStatus").text("Spawning zombie on-chain...");
   loading(true);
   try{
-    // helpful guard if someone still has the one-per-owner rule in a stale build
-    const mine = await getZombiesByOwner(userAccount);
-    if (mine && mine.length > 0) {
-      const dry = cryptoZombies.methods.createRandomZombie(name);
-      const err = await simulate(dry, userAccount, 0);
-      if (err) throw new Error("This deployed contract enforces ONE zombie per address. Remove the require in zombiefactory.sol and redeploy.");
-    }
     await cryptoZombies.methods.createRandomZombie(name).send({ from: userAccount });
     toast("Spawn complete!");
     $("#txStatus").text("Zombie created successfully!");
@@ -387,6 +398,7 @@ async function transferZombie() {
     loading(false);
   }
 }
+
 
 /*** Render ***/
 async function refreshMyIds(){ MY_IDS = await getZombiesByOwner(userAccount); renderMyIdPills(); }

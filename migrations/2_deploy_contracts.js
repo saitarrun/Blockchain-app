@@ -1,16 +1,18 @@
-var safemath = artifacts.require("./safemath.sol");
-var zombiefactory = artifacts.require("./zombiefactory.sol");
-var zombiefeeding = artifacts.require("./zombiefeeding.sol");
-var zombiehelper = artifacts.require("./zombiehelper.sol");
-var zombieattack = artifacts.require("./zombieattack.sol");
-var zombieownership = artifacts.require("./zombieownership.sol");
+const SafeMath = artifacts.require("./safemath.sol");
+const ZombieFactory = artifacts.require("./zombiefactory.sol");
+const ZombieFeeding = artifacts.require("./zombiefeeding.sol");
+const ZombieHelper = artifacts.require("./zombiehelper.sol");
+const ZombieAttack = artifacts.require("./zombieattack.sol");
+const ZombieOwnership = artifacts.require("./zombieownership.sol");
+const Marketplace = artifacts.require("./marketplace.sol");
 
-module.exports = function(deployer) {
-
-    deployer.deploy(safemath);
-    deployer.deploy(zombiefactory);
-    deployer.deploy(zombiefeeding);
-    deployer.deploy(zombiehelper);
-    deployer.deploy(zombieattack);
-    deployer.deploy(zombieownership);
-}
+module.exports = async function(deployer) {
+  await deployer.deploy(SafeMath);
+  await deployer.link(SafeMath, [ZombieFactory, ZombieFeeding, ZombieHelper, ZombieAttack, ZombieOwnership]);
+  await deployer.deploy(ZombieFactory);
+  await deployer.deploy(ZombieFeeding);
+  await deployer.deploy(ZombieHelper);
+  await deployer.deploy(ZombieAttack);
+  const zombieOwnership = await deployer.deploy(ZombieOwnership);
+  await deployer.deploy(Marketplace, zombieOwnership.address);
+};
